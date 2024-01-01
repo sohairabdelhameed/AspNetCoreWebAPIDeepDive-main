@@ -5,11 +5,17 @@ using Microsoft.EntityFrameworkCore;
 namespace CourseLibrary.API;
 
 internal static class StartupHelperExtensions
-{
+{ 
     // Add services to the container
     public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
     {
-        builder.Services.AddControllers();
+     //add framework services when building APIs to the container so they can be used by DI
+
+        builder.Services.AddControllers( configure =>
+        {
+            configure.ReturnHttpNotAcceptable = true; //returning 406 status: unsupported media-type
+    
+        }).AddXmlDataContractSerializerFormatters(); 
 
         builder.Services.AddScoped<ICourseLibraryRepository, 
             CourseLibraryRepository>();
@@ -31,6 +37,19 @@ internal static class StartupHelperExtensions
         if (app.Environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
+        }
+        else
+        {
+            app.UseExceptionHandler(appBuilder =>
+            {
+                appBuilder.Run(async context =>
+                {
+                    context.Response.StatusCode = 500;
+                    await context.Response.WriteAsync(
+                        " An Unexpected fault happened.Try again later."
+                        );
+                });
+            });
         }
  
         app.UseAuthorization();

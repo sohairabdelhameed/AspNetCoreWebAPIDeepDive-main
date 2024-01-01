@@ -6,6 +6,7 @@ namespace CourseLibrary.API.Services;
 
 public class CourseLibraryRepository : ICourseLibraryRepository 
 {
+    //repositories represents methods for data manipulation 
     private readonly CourseLibraryContext _context;
 
     public CourseLibraryRepository(CourseLibraryContext context)
