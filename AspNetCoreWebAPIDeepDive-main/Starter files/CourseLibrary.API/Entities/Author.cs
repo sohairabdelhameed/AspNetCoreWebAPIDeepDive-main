@@ -4,6 +4,7 @@ namespace CourseLibrary.API.Entities;
 
 public class Author
 {
+    //Entity model: database rows as objects
     [Key]
     public Guid Id { get; set; }
 

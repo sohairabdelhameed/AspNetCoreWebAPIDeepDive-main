@@ -13,7 +13,7 @@ public class CourseLibraryRepository : ICourseLibraryRepository
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
     }
-
+ 
     public void AddCourse(Guid authorId, Course course)
     {
         if (authorId == Guid.Empty)
