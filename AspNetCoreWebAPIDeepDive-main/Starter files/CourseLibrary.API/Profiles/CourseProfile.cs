@@ -7,6 +7,6 @@ public class CoursesProfile : Profile
     {
         CreateMap<Entities.Course, Models.CourseDto>();
         CreateMap<Models.CourseForCreationDto, Entities.Course>();
-        CreateMap<Models.CourseForUpdateDto4, Entities.Course>().ReverseMap();
+        CreateMap<Models.CourseForUpdateDto, Entities.Course>().ReverseMap();
     }
 }

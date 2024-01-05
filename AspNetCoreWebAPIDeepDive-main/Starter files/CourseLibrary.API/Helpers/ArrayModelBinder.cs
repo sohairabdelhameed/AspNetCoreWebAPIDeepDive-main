@@ -10,7 +10,7 @@ namespace CourseLibrary.API.Helpers
     //to the respective models in an ASP.NET Core MVC application.
     public class ArrayModelBinder : IModelBinder
     {
-        // Method implementing the IModelBinder interface.
+        //Method implementing the IModelBinder interface.
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
             // Checks if the type is an enumerable type. If not, binding fails.

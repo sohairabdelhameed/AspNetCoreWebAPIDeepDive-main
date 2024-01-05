@@ -1,5 +1,8 @@
 ﻿using CourseLibrary.API.DbContexts;
-using CourseLibrary.API.Entities; 
+using CourseLibrary.API.Entities;
+using CourseLibrary.API.Helpers;
+using CourseLibrary.API.Models;
+using CourseLibrary.API.ResourceParameters;
 using Microsoft.EntityFrameworkCore;
 
 namespace CourseLibrary.API.Services;
@@ -8,10 +11,12 @@ public class CourseLibraryRepository : ICourseLibraryRepository
 {
     //repositories represents methods for data manipulation 
     private readonly CourseLibraryContext _context;
-
-    public CourseLibraryRepository(CourseLibraryContext context)
+    private readonly IPropertyMappingService _propertyMappingService;
+    public CourseLibraryRepository(CourseLibraryContext context,
+        IPropertyMappingService propertyMappingService)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
+        _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(_propertyMappingService));   
     }
  
     public void AddCourse(Guid authorId, Course course)
@@ -52,6 +57,74 @@ public class CourseLibraryRepository : ICourseLibraryRepository
         return await _context.Courses
           .Where(c => c.AuthorId == authorId && c.Id == courseId).FirstOrDefaultAsync();
 #pragma warning restore CS8603 // Possible null reference return.
+    }
+
+    public async Task<PagedList<Author>> GetAuthorsAsync(AuthorsResourceParameters authorsResourceParameters)
+    {
+        if(authorsResourceParameters == null)
+        {
+            throw new ArgumentNullException(nameof(authorsResourceParameters));
+        }
+        
+        //if (string.IsNullOrWhiteSpace(authorsResourceParameters.MainCategory)
+        //    && string.IsNullOrWhiteSpace(authorsResourceParameters.SearchQuery))
+        //{
+        //    return await GetAuthorsAsync();
+        //}
+        //we have 3 cases:filter,search,filter&search
+        
+       //we need a collection to start from
+        var collection = _context.Authors as IQueryable<Author>;
+        
+        //apply the filter only 
+        if (!string.IsNullOrWhiteSpace(authorsResourceParameters.MainCategory))
+        {
+            var mainCategory = authorsResourceParameters.MainCategory.Trim();
+            collection=collection.Where(a=>a.MainCategory == mainCategory);
+        }
+
+        //apply the search only
+        if (!string.IsNullOrWhiteSpace(authorsResourceParameters.SearchQuery))
+        {
+            var searchQuery = authorsResourceParameters.SearchQuery.Trim();
+            collection = collection.Where(a => a.MainCategory.Contains(searchQuery)
+            || a.FirstName.Contains(searchQuery)
+            ||a.LastName.Contains(searchQuery));
+            
+        }
+
+        //Apply the paging at last so it will be applied to all the data
+        //return await collection
+        //.Skip(authorsResourceParameters.PageSize * (authorsResourceParameters.PageNumber - 1))
+        //.Take(authorsResourceParameters.PageSize)
+        //.ToListAsync();
+
+        //orderBy
+        if (!string.IsNullOrWhiteSpace(authorsResourceParameters.OrderBy))
+        {
+            //get propertyMappingService
+            var authorPropertyMappingDictionary =
+                _propertyMappingService.GetPropertyMapping<AuthorDto, Author>();
+
+            collection = collection.ApplySort(authorsResourceParameters.OrderBy,
+                authorPropertyMappingDictionary);
+
+            //if (authorsResourceParameters.OrderBy.ToLowerInvariant()=="name") 
+            //{
+            //    collection = collection.OrderBy(a => a.FirstName)
+            //   .ThenBy(a => a.LastName);
+
+            //}
+           
+        }
+        //using PagedList
+
+        return await PagedList<Author>.CreateAsync
+            (collection,
+            authorsResourceParameters.PageNumber,
+            authorsResourceParameters.PageSize
+            );
+
     }
 
     public async Task<IEnumerable<Course>> GetCoursesAsync(Guid authorId)
