@@ -22,7 +22,7 @@ namespace CourseLibrary.API.Helpers
 
             // Gets the value from the value provider for the specified model name.
             var value = bindingContext.ValueProvider.GetValue(bindingContext.ModelName).ToString();
-
+           
             // If the value is null or white space, set the model to null.
             if (string.IsNullOrWhiteSpace(value))
             {
@@ -47,7 +47,16 @@ namespace CourseLibrary.API.Helpers
             // Returns a successful result (assigning the model) to complete the binding process.
             bindingContext.Result = ModelBindingResult.Success(bindingContext.Model);
             return Task.CompletedTask;
+            }
+            //the value is not null or white space
+            //and the type of the model is enumrable
+            //get the enumerables type and a converter
+            var elementType = bindingContext.ModelType.GetTypeInfo()
+                .GetGenericArguments()[0];
+            var converter = TypeDescriptor.GetConverter(elementType);   
+            //convert each item in the value list to enumrable type
+            var values = value.Split(new[] {
         }
+        
     }
-
 }

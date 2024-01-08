@@ -82,12 +82,12 @@ internal static class StartupHelperExtensions
         {
             options.UseSqlite(@"Data Source=library.db");
         });
-
+        //Mapper
         builder.Services.AddAutoMapper(
             AppDomain.CurrentDomain.GetAssemblies());
-        
+        //cachings
         builder.Services.AddResponseCaching();
-
+        //etags
         builder.Services.AddHttpCacheHeaders(
             (expirationModelOptions) =>
             {
